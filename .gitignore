@@ -1,0 +1,10 @@
+node_modules/
+build/
+dist/
+coverage/
+frontend/public/models/
+.DS_Store
+*.log
+.env*
+!.env.example
+.hcm_db_*.json

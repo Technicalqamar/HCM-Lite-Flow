@@ -1,0 +1,8 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+*.log
+.hcm_db_*.json
+dist/
+coverage/

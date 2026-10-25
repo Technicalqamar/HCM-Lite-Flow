@@ -48,11 +48,12 @@ export const login = async (req, res, next) => {
 
     const result = await loginUser({ email, password, ip: req.ip });
 
-    // Set HttpOnly refresh token cookie if supported
+    // Set HttpOnly refresh token cookie - cross-origin requires SameSite: 'none' and Secure: true
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('hcm_refresh_token', result.tokens.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -77,7 +78,12 @@ export const refresh = async (req, res, next) => {
 };
 
 export const logout = async (req, res) => {
-  res.clearCookie('hcm_refresh_token');
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.clearCookie('hcm_refresh_token', {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  });
   res.json({ success: true, message: 'Successfully logged out.' });
 };
 

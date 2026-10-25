@@ -5,10 +5,13 @@ import apiRouter from './routes/index.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { config } from './config/env.js';
 
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
+const parseOrigins = (value) =>
+  (value || 'http://localhost:3000')
+    .split(',')
+    .map((o) => o.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+
+const allowedOrigins = parseOrigins(config.frontendUrl);
 
 export const createApp = () => {
   const app = express();
@@ -16,13 +19,17 @@ export const createApp = () => {
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin) return callback(null, true);
+        const normalized = origin.replace(/\/$/, '');
+        if (allowedOrigins.includes(normalized)) {
           callback(null, true);
         } else {
           callback(new Error('Not allowed by CORS'));
         }
       },
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
     })
   );
 
